@@ -1,0 +1,27 @@
+def serveur_fils():
+	sockfd.close()
+	while True:
+		recu=connfd.recv(1024)
+		if len(recu)==0:
+			print("Deconnexion de",client)
+			connfd.close()
+			sys.exit(0)
+		print(recu)
+		connfd.send(recu)
+############################################################################
+if len(sys.argv)!=2:
+	print("Usage : ",sys.argv[0],"n°_port")
+	sys.exit()
+	
+sockfd=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+sockfd.bind(('',int(sys.argv[1])))
+sockfd.listen(10)
+while True:
+	print("Attente d'un client")
+	connfd,client=sockfd.accept()
+	print("Connection de",client)
+	child=os.fork()
+	if child==0:
+		serveur_fils()
+	else:
+		connfd.close()
