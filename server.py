@@ -41,7 +41,7 @@ def server_pere():
 		print("Usage : ",sys.argv[0],"name_file_user","n°_port")
 		sys.exit(-1)
 	try:
-		fd=os.open(sys.argv[1],os.O_RDONLY)
+		fd=os.open(sys.argv[1],os.O_RDONLY) #Ouverture du fichier habilitation
 	except OSError:
 		print("erreur d'ouverture de",sys.argv[1])
 	sys.exit(-1)
@@ -50,7 +50,7 @@ def server_pere():
 
 	# Initialisation du port d'écoute
 	sockfd=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-	sockfd.bind(('',int(sys.argv[1])))
+	sockfd.bind(('',int(sys.argv[2])))
 	# Autorise jusqu'a 10 connexions
 	sockfd.listen(10)
 
@@ -71,34 +71,40 @@ def server_pere():
 
     
     # Il faut créer une instruction qui lit dans le fichier habilitation les users et le mdp
-    #data = open("essai.txt", "r").read()
-    #if nom_du_reseau in data :
-    #    print("ok")
+    # CONNEXION
 
     message = "WHO : "
     conn.send(message.encode())
-    dat = conn.recv(1024).decode()
-    dat = str(dat)
-    if not dat:
+    login = conn.recv(1024).decode()
+    login = str(login)
+
+    if not login:
         conn.close()
-    if valid_id_client == dat:
-        message = ' -> Enter the password:'
+    if login in fd:
+        message = "PASSWD :"
         conn.send(message.encode())
-        dat = conn.recv(1024).decode()
-        if not dat:
+        mdp = conn.recv(1024).decode()
+        i=0
+        if not mdp:
             conn.close()
-        if valid_passwd_client != dat:
-            message = ' -> Authentication failed. Because of bad password BYE'
-            conn.send(message.encode())
-            conn.close()
-        else:
-            message = 'Leggo. U connected bish'
-            conn.send(message.encode())
+
+        if i <= 3 :
+            if mdp in fd:
+                message = "WELC"
+                conn.send(message.encode())
+            else:
+                message = "bad password try again"
+                conn.send(message.encode())
+        message = "Bad password BYE"
+        conn.send(message.encode())
+        conn.close()
     else:
-        message = ' -> Bad id ! BYE'
+        message = "Credential false ! BY"
         conn.send(message.encode())
         conn.close()
 
+
+    # ACTION
     while True:
         data = conn.recv(1024).decode()
         if not data:
